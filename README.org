@@ -1,0 +1,59 @@
+* Meltdown Attack Demonstration
+
+This program implements an attack through Meltdown [[http://meltdownattack.com/][the Meltdown attack]].
+
+** Background
+
+One of the central security features of today's operating systems is memory isolation. Operating systems ensure that user applications cannot access each other's memories and prevent user applications from reading or writing kernel memory.
+
+On modern processors, the isolation between the kernel and user processes is typically realized by a supervisor bit of the processor that defines whether a memory page of the kernel can be accessed or not. The basic idea is that bit can only be set when entering kernel code and it is cleared when switching to user processes. This hardware feature allows operating systems to map the kernel into the address space of every process and to have very efficient transitions from the user process to the kernel. e.g., for interrupt handling. Consequently, in practice, there is no change of the memory mapping when switching from a user process to the kernel.
+
+However, there is a severe security risk hidden inside this design. By combining this user-kernel memory isolation method and out-of-order execution in pipelined CPU, there is a way to get illegal access to any kernel memories.
+
+** Meltdown
+
+[IAIK/Meltdown] published a novel side-channel attack based on out-of-order execution: by measuring cache hit/miss time, we can decide whether a specific memory address is cached or not.  If the memory address is linked to a secret, we can gain access to it simply.
+
+A typical Meltdown attack consists of steps following:
+
+The value of the attacked memory location is loaded into a register, but it's inaccessible to the attacker.
+The attacker accesses the cache line based on the value of that register.
+The attacker uses Flush+Reload to determine which page is cached, and reveals the secret.
+
+** Proof
+
+This section describes a demonstration of Meltdown.
+
+*** Environment
+
+Debian 9 with Linux version 4.9.0-3 on Intel i5-6200U where TSX is not available.
+KASLR is disabled.
+
+*** Execution
+
+#+BEGIN_SRC
+riessarsadyx@riessarsadyx-CP655:~/meltdown$ sudo ./leak 
+I'm 8417  My secret is at 55BF6A3D9E68
+phys = 179657e68
+
+riessarsadyx@riessarsadyx-CP655:~/meltdown$ ./exploit 179657e68
+Welcome to Meltdown!
+Will begin dumping physical memory starting from 0x0000000179657E68,
+whose virtual address is 0xFFFF880179657E68.
+Press Ctrl-C to interrupt.
+"There's a little devil inside all of us." Beneath their manufactured perception - their artificial reality - is a writhing, twisted mess of dread.
+I'm %d  My secret is at %lX
+phys = %lx
+...
+#+END_SRC
+
+It clearly shows that an arbitrary user program can read arbitrary physical memory.
+
+** Remarks
+
++ The signal handler approach is extremely inefficient when KASLR is enabled, which effectively makes it unacceptable for attackers.
+
+** References
+
++ IAIK/meltdown :: Demonstation of meltdown [[https://github.com/IAIK/meltdown][IAIK/meltdown]].
++ pagemap.txt :: Linux documentation ~/Documentation/vm/pagemap.txt~.
