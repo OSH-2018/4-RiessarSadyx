@@ -55,5 +55,4 @@ It clearly shows that an arbitrary user program can read arbitrary physical memo
 
 ** References
 
-+ IAIK/meltdown :: Demonstation of meltdown [[https://github.com/IAIK/meltdown][IAIK/meltdown]].
-+ pagemap.txt :: Linux documentation ~/Documentation/vm/pagemap.txt~.
+IAIK/meltdown :: Demonstation of meltdown [[https://github.com/IAIK/meltdown][IAIK/meltdown]].
